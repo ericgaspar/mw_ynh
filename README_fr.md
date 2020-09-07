@@ -1,38 +1,35 @@
-# Navidrome pour YunoHost
+# Bibliogram pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/navidrome.svg)](https://dash.yunohost.org/appci/app/navidrome) ![](https://ci-apps.yunohost.org/ci/badges/navidrome.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/navidrome.maintain.svg)  
-[![Installer Navidrome avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=navidrome)
+[![Niveau d'intégration](https://dash.yunohost.org/integration/bibliogram.svg)](https://dash.yunohost.org/appci/app/bibliogram) ![](https://ci-apps.yunohost.org/ci/badges/bibliogram.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/bibliogram.maintain.svg)  
+[![Installer Bibliogram avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=bibliogram)
 
 *[Read this readme in english.](./README.md)* 
 
-> *Ce package vous permet d'installer Navidrome rapidement et simplement sur un serveur YunoHost.  
+> *Ce package vous permet d'installer Bibliogram rapidement et simplement sur un serveur YunoHost.  
 Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install) pour apprendre comment l'installer.*
 
 ## Vue d'ensemble
-Navidrome est un serveur et un streamer de collection de musique en ligne open source. Il vous donne la liberté d'écouter votre collection de musique à partir de n'importe quel navigateur ou appareil mobile. C'est comme votre Spotify personnel !
 
-**Version incluse :** 0.32.0
+Bibliogram est un site Web qui prend les données de profil public d'Instagram et les met dans une page plus conviviale qui se charge plus rapidement, donne des images téléchargeables, élimine les publicités, génère des flux RSS et ne vous invite pas à vous inscrire.
+
+**Version incluse :** 1.0.0
 
 ## Captures d'écran
 
-![](https://raw.githubusercontent.com/deluan/navidrome/master/.github/screenshots/ss-desktop-player.png)
+![](sources/bibliogram.jpg)
 
 ## Démo
 
-* [Démo officielle](https://www.navidrome.org/demo/)
+* [Démo officielle](https://bibliogram.art/)
 
 ## Configuration
-
-Vous pouvez configurer Navidrome en modifiant le fichier `/var/lib/navidrome/navidrome.toml` et en vous aidant de la [documentation](https://www.navidrome.org/docs/usage/configuration-options/).
-
-La musique est à stocker dans le dossier `/home/yunohost.navidrome/Music`.
-
-Vous devez activer site public si vous souhaitez connecter un lecteur client à Navidrome.
+Bibliogram s'installe sur un domaine dédié comme `bibliogram.domain.tld`.  
+Vous pouvez configurer Bibliogram en modifiant le fichier `/var/www/bibliogram/config.js` et en vous aidant de la [documentation](https://git.sr.ht/~cadence/bibliogram-docs/tree/master/docs/Configuring.md)
 
 ## Documentation
 
- * Documentation officielle : https://www.navidrome.org/docs/
- * Documentation YunoHost : https://yunohost.org/#/app_navidrome_fr
+ * Documentation officielle : https://git.sr.ht/~cadence/bibliogram-docs
+ * Documentation YunoHost : https://yunohost.org/#/app_bibliogram_fr
 
 ## Caractéristiques spécifiques YunoHost
 
@@ -43,24 +40,24 @@ Vous devez activer site public si vous souhaitez connecter un lecteur client à 
 
 #### Architectures supportées
 
-* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/navidrome%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/navidrome/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/navidrome%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/navidrome/)
+* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/bibliogram%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/bibliogram/)
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/bibliogram%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/bibliogram/)
 
 ## Liens
 
- * Signaler un bug : https://github.com/YunoHost-Apps/navidrome_ynh/issues
- * Dépôt de l'application principale : https://github.com/deluan/navidrome/
+ * Signaler un bug : https://github.com/YunoHost-Apps/bibliogram_ynh/issues
+ * Dépôt de l'application principale : https://git.sr.ht/~cadence/bibliogram
  * Site web YunoHost : https://yunohost.org/
 
 ---
 
 ## Informations pour les développeurs
 
-Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/navidrome_ynh/tree/testing).
+Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/bibliogram_ynh/tree/testing).
 
 Pour essayer la branche testing, procédez comme suit.
 ```
-sudo yunohost app install https://github.com/YunoHost-Apps/navidrome_ynh/tree/testing --debug
+sudo yunohost app install https://github.com/YunoHost-Apps/bibliogram_ynh/tree/testing --debug
 ou
-sudo yunohost app upgrade navidrome -u https://github.com/YunoHost-Apps/navidrome_ynh/tree/testing --debug
+sudo yunohost app upgrade bibliogram -u https://github.com/YunoHost-Apps/bibliogram_ynh/tree/testing --debug
 ```

@@ -24,9 +24,8 @@ ynh_abort_if_errors
 #=================================================
 
 domain=$YNH_APP_ARG_DOMAIN
-path_url=$YNH_APP_ARG_PATH
+path_url="/"
 is_public=$YNH_APP_ARG_IS_PUBLIC
-architecture=$(ynh_detect_arch)
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -35,7 +34,7 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 ynh_script_progression --message="Validating installation parameters..." --weight=1
 
-final_path=/opt/yunohost/$app
+final_path=/var/www/$app
 test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
 
 # Register (book) web path
@@ -55,106 +54,100 @@ ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 #=================================================
 # FIND AND OPEN A PORT
 #=================================================
-ynh_script_progression --message="Configuring firewall..." --weight=0
+ynh_script_progression --message="Configuring firewall..." --weight=2
 
 # Find an available port
-port=$(ynh_find_port --port=4533)
+port=$(ynh_find_port --port=64737)
 ynh_app_setting_set --app=$app --key=port --value=$port
 
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Installing dependencies..." --weight=9
+ynh_script_progression --message="Installing dependencies..." --weight=15
 
 ynh_install_app_dependencies $pkg_dependencies
+
+# Install Nodejs
+ynh_exec_warn_less ynh_install_nodejs --nodejs_version=$nodejs_version
+
+# Install Yarn
+#ynh_install_extra_app_dependencies --repo="deb https://dl.yarnpkg.com/debian/ stable main" --package="yarn" --key="https://dl.yarnpkg.com/debian/pubkey.gpg"
+
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
+ynh_script_progression --message="Setting up source files..." --weight=2
+
+ynh_app_setting_set --app=$app --key=final_path --value=$final_path
+# Note: We use git instead of ynh_setup_source, cause this repo use submodules
+git clone https://github.com/johni0702/mumble-web "$final_path" --quiet
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Configuring NGINX web server..." --weight=2
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
 
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Configuring system user..." --weight=1
+ynh_script_progression --message="Configuring system user..." --weight=3
 
 # Create a system user
 ynh_system_user_create --username=$app --home_dir=$final_path
 
 #=================================================
-# DOWNLOAD, CHECK AND UNPACK SOURCE
-#=================================================
-ynh_script_progression --message="Setting up source files..." --weight=4
-
-ynh_app_setting_set --app=$app --key=final_path --value=$final_path
-
-# Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source --dest_dir=$final_path --source_id="$architecture"
-
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Configuring NGINX web server..." --weight=3
-
-# Create a dedicated nginx config
-ynh_add_nginx_config
-
-#=================================================
 # SPECIFIC SETUP
-#=================================================
-# YUNOHOST MULTIMEDIA INTEGRATION
-#=================================================
-ynh_script_progression --message="Adding multimedia directories..." --weight=5
+#==============================================
+# INSTALL HEDGEDOC
+#==============================================
+ynh_script_progression --message="Building $app... (this will take some time and resources!)" --weight=20
 
-mkdir -p /home/yunohost.$app/Music
-
-ynh_multimedia_build_main_dir
-ynh_multimedia_addfolder --source_dir="/home/yunohost.$app/Music" --dest_dir="share/Music"
-
-#=================================================
-# MODIFY A CONFIG FILE
-#=================================================
-ynh_script_progression --message="Modifying a config file..." --weight=1
-
-config_path="/var/lib/$app"
-mkdir -p "$config_path"
-
-cp ../conf/navidrome.toml "$config_path/navidrome.toml"
-
-# Main config File
-ynh_replace_string --match_string="__PORT__" --replace_string="$port" --target_file="$config_path/navidrome.toml"
-ynh_replace_string --match_string="__PATH_URL__" --replace_string="$path_url" --target_file="$config_path/navidrome.toml"
-ynh_replace_string --match_string="__CONFIG_PATH__" --replace_string="$config_path" --target_file="$config_path/navidrome.toml"
-
-ynh_store_file_checksum --file="$config_path/navidrome.toml"
+pushd "$final_path" || ynh_die
+	ynh_use_nodejs
+	ynh_exec_warn_less exec_as $app env PATH=$PATH npm install
+popd || ynh_die
 
 #=================================================
 # SETUP SYSTEMD
 #=================================================
 ynh_script_progression --message="Configuring a systemd service..." --weight=1
 
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="../conf/systemd.service"
-ynh_replace_string --match_string="__FINAL_PATH__" --replace_string="$final_path" --target_file="../conf/systemd.service"
-ynh_replace_string --match_string="__CONFIG_PATH__" --replace_string="$config_path" --target_file="../conf/systemd.service"
+# ynh_replace_string --match_string="__ENV_PATH__" --replace_string="$PATH"    --target_file="../conf/systemd.service"
+# ynh_replace_string --match_string="__YNH_NPM__"  --replace_string="$ynh_npm" --target_file="../conf/systemd.service"
 
 ynh_add_systemd_config
+
+#=================================================
+# MODIFY A CONFIG FILE
+#=================================================
+ynh_script_progression --message="Modifying a config file..."
+
+# cp ../conf/config.js "$final_path/config.js"
+
+# # Main config File
+# ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$final_path/config.js"
+
+# ynh_store_file_checksum --file="$final_path/config.js"
 
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
 # SECURE FILES AND DIRECTORIES
 #=================================================
-ynh_script_progression --message="Securing files and directories..." --weight=1
+ynh_script_progression --message="Securing files and directories..."
 
 # Set permissions to app files
-chown -R $app:$app "$final_path"
-chown -R $app:$app "$config_path"
-
-# Set permissions to media files
-chown -R $app:www-data /home/yunohost.$app/
-chmod -R 764 /home/yunohost.$app
+chown -R www-data:www-data $final_path
 
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --weight=1
+ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description "Web-based music collection server and streamer"
+yunohost service add $app --description "An alternative Instagram front-end" --log="/var/log/$app/$app.log"
 
 #=================================================
 # START SYSTEMD SERVICE
@@ -162,7 +155,7 @@ yunohost service add $app --description "Web-based music collection server and s
 ynh_script_progression --message="Starting a systemd service..." --weight=2
 
 # Start a systemd service
-ynh_systemd_action --service_name=$app --action="start" --log_path="systemd" --line_match="Version:"
+ynh_systemd_action --service_name=$app --action="start" --log_path="systemd" --line_match="Server started"
 
 #=================================================
 # SETUP SSOWAT

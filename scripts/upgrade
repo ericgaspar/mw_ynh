@@ -21,7 +21,6 @@ path_url=$(ynh_app_setting_get --app=$app --key=path)
 is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 port=$(ynh_app_setting_get --app=$app --key=port)
-architecture=$(ynh_detect_arch)
 
 #=================================================
 # CHECK VERSION
@@ -33,7 +32,7 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up $app before upgrading (may take a while)..." --weight=4
+ynh_script_progression --message="Backing up $app before upgrading (may take a while)..." --weight=60
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -59,24 +58,25 @@ ynh_systemd_action --service_name=$app --action="stop" --log_path="systemd"
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
-	ynh_script_progression --message="Upgrading source files..." --weight=5
+	ynh_script_progression --message="Upgrading source files..." --weight=60
 
-	# # Create a temporary directory
-	# tmpdir="$(mktemp -d)"
-	# # Backup the config file in the temp dir
-	# cp -a "/var/lib/$app/navidrome.toml" "$tmpdir/navidrome.toml"
+	# Create a temporary directory
+	tmpdir="$(mktemp -d)"
+	
+	# Backup the config file in the temp dir
+	cp -a "$final_path/config.js" "$tmpdir/config.js"
 	
 	# Remove the app directory securely
 	ynh_secure_remove --file=$final_path
 
-	# Download, check integrity, uncompress and patch the source from app.src
-	ynh_setup_source --dest_dir=$final_path --source_id="$architecture"
+	# Download from git source
+	git clone https://git.sr.ht/~cadence/bibliogram "$final_path" --quiet
 
-	# # Copy the admin saved settings from tmp directory to final config path	
-	# cp -a "$tmpdir/navidrome.toml" "/var/lib/$app/navidrome.toml" 
+	#Copy the admin saved settings from tmp directory to final path	
+	cp -a "$tmpdir/config.js" "$final_path/config.js" 
 
-	# # Remove the tmp directory securely
-	# ynh_secure_remove --file="$tmpdir"
+	# Remove the tmp directory securely
+	ynh_secure_remove --file="$tmpdir"
 fi
 
 #=================================================
@@ -84,15 +84,19 @@ fi
 #=================================================
 ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=8
+ynh_script_progression --message="Upgrading dependencies..." --weight=15
 
-ynh_install_app_dependencies $pkg_dependencies
+# Install Nodejs
+ynh_exec_warn_less ynh_install_nodejs --nodejs_version=$nodejs_version
+
+# Install Yarn
+ynh_install_extra_app_dependencies --repo="deb https://dl.yarnpkg.com/debian/ stable main" --package="yarn" --key="https://dl.yarnpkg.com/debian/pubkey.gpg"
 
 #=================================================
 # CREATE DEDICATED USER
@@ -103,42 +107,42 @@ ynh_script_progression --message="Making sure dedicated system user exists..." -
 ynh_system_user_create --username=$app
 
 #=================================================
-# YUNOHOST MULTIMEDIA INTEGRATION
-#=================================================
-ynh_script_progression --message="Adding multimedia directories..." --weight=5
+# SPECIFIC UPGRADE
+#==============================================
+# INSTALL HEDGEDOC
+#==============================================
+if [ "$upgrade_type" == "UPGRADE_APP" ]
+then
+	ynh_script_progression --message="Building $app... (this will take some time and resources!)" --weight=20
 
-mkdir -p /home/yunohost.$app/Music
-
-ynh_multimedia_build_main_dir
-ynh_multimedia_addfolder --source_dir="/home/yunohost.$app/Music" --dest_dir="share/Music"
+	pushd "$final_path" || ynh_die
+		ynh_use_nodejs
+		ynh_exec_warn_less yarn install --no-optional
+	popd || ynh_die
+fi
 
 #=================================================
 # MODIFY A CONFIG FILE
 #=================================================
-# ynh_script_progression --message="Modifying a config file..."
+ynh_script_progression --message="Modifying a config file..." --weight=2
 
-config_path="/var/lib/$app"
-# mkdir -p "$config_path"
+ynh_backup_if_checksum_is_different --file="$final_path/config.js"
 
-# ynh_backup_if_checksum_is_different --file="$config_path/navidrome.toml"
+cp ../conf/config.js "$final_path/config.js"
 
-# cp ../conf/navidrome.toml "$config_path/navidrome.toml"
+# Main config File
+ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$final_path/config.js"
 
-# # Main config File
-# ynh_replace_string --match_string="__PORT__" --replace_string="$port" --target_file="$config_path/navidrome.toml"
-# ynh_replace_string --match_string="__PATH_URL__" --replace_string="$path_url" --target_file="$config_path/navidrome.toml"
-# ynh_replace_string --match_string="__CONFIG_PATH__" --replace_string="$config_path" --target_file="$config_path/navidrome.toml"
-
-# ynh_store_file_checksum --file="$config_path/navidrome.toml"
+# Recalculate and store the checksum of the file for the next upgrade.
+ynh_store_file_checksum --file="$final_path/config.js"
 
 #=================================================
 # SETUP SYSTEMD
 #=================================================
 ynh_script_progression --message="Configuring a systemd service..." --weight=2
 
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="../conf/systemd.service"
-ynh_replace_string --match_string="__FINAL_PATH__" --replace_string="$final_path" --target_file="../conf/systemd.service"
-ynh_replace_string --match_string="__CONFIG_PATH__" --replace_string="$config_path" --target_file="../conf/systemd.service"
+ynh_replace_string --match_string="__ENV_PATH__" --replace_string="$PATH"    --target_file="../conf/systemd.service"
+ynh_replace_string --match_string="__YNH_NPM__"  --replace_string="$ynh_npm" --target_file="../conf/systemd.service"
 
 # Create a dedicated systemd config
 ynh_add_systemd_config
@@ -152,25 +156,20 @@ ynh_script_progression --message="Securing files and directories..."
 
 # Set permissions on app files
 chown -R $app:$app $final_path
-chown -R $app:$app $config_path
-
-# Set permissions on media files
-chown -R $app:www-data /home/yunohost.$app/
-chmod -R 764 /home/yunohost.$app
 
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description "Web-based music collection server and streamer"
+yunohost service add $app --description "An alternative Instagram front-end" --log="/var/log/$app/$app.log"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Starting a systemd service..." --weight=1
 
-ynh_systemd_action --service_name=$app --action="start" --log_path="systemd" --line_match="Version:"
+ynh_systemd_action --service_name=$app --action="start" --log_path="systemd" --line_match="Server started"
 
 #=================================================
 # RELOAD NGINX
