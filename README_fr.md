@@ -1,4 +1,4 @@
-# Bibliogram pour YunoHost
+# Mumble Web pour YunoHost
 
 [![Niveau d'intégration](https://dash.yunohost.org/integration/bibliogram.svg)](https://dash.yunohost.org/appci/app/bibliogram) ![](https://ci-apps.yunohost.org/ci/badges/bibliogram.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/bibliogram.maintain.svg)  
 [![Installer Bibliogram avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=bibliogram)
@@ -20,7 +20,7 @@ Bibliogram est un site Web qui prend les données de profil public d'Instagram e
 
 ## Démo
 
-* [Démo officielle](https://bibliogram.art/)
+* [Démo officielle](https://voice.johni0702.de/?address=voice.johni0702.de&port=443/demo)
 
 ## Configuration
 Bibliogram s'installe sur un domaine dédié comme `bibliogram.domain.tld`.  
@@ -46,7 +46,7 @@ Vous pouvez configurer Bibliogram en modifiant le fichier `/var/www/bibliogram/c
 ## Liens
 
  * Signaler un bug : https://github.com/YunoHost-Apps/bibliogram_ynh/issues
- * Dépôt de l'application principale : https://git.sr.ht/~cadence/bibliogram
+ * Dépôt de l'application principale : https://github.com/Johni0702/mumble-web
  * Site web YunoHost : https://yunohost.org/
 
 ---

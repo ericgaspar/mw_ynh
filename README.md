@@ -1,15 +1,15 @@
-# Bibliogram for YunoHost
+# Mumble Web for YunoHost
 
 [![Integration level](https://dash.yunohost.org/integration/bibliogram.svg)](https://dash.yunohost.org/appci/app/bibliogram) ![](https://ci-apps.yunohost.org/ci/badges/bibliogram.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/bibliogram.maintain.svg)  
-[![Install Bibliogram with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=bibliogram)
+[![Install Mumble Web with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=bibliogram)
 
 *[Lire ce readme en français.](./README_fr.md)*
 
-> *This package allows you to install Bibliogram quickly and simply on a YunoHost server.  
+> *This package allows you to install Mumble Web quickly and simply on a YunoHost server.  
 If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/install) to learn how to install it.*
 
 ## Overview
-Bibliogram is a website that takes data from Instagram's public profile views and puts it into a friendlier page that loads faster, gives downloadable images, eliminates ads, generates RSS feeds, and doesn't urge you to sign up.
+
 
 **Shipped version:** 1.0.0
 
@@ -19,7 +19,7 @@ Bibliogram is a website that takes data from Instagram's public profile views an
 
 ## Demo
 
-* [Official demo](https://bibliogram.art/)
+* [Official demo](https://voice.johni0702.de/?address=voice.johni0702.de&port=443/demo)
 
 ## Configuration
 
@@ -29,7 +29,7 @@ You can configure Bibliogram by editing this file `/var/www/bibliogram/config.js
 ## Documentation
 
  * Official documentation: https://git.sr.ht/~cadence/bibliogram-docs
- * YunoHost documentation: https://yunohost.org/#/app_bibliogram
+ * YunoHost documentation: https://yunohost.org/#/app_mumble-web
 
 ## YunoHost specific features
 
@@ -40,24 +40,24 @@ You can configure Bibliogram by editing this file `/var/www/bibliogram/config.js
 
 #### Supported architectures
 
-* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/bibliogram%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/bibliogram/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/bibliogram%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/bibliogram/)
+* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/mumble-web%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/mumble-web/)
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/mumble-web%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/mumble-web/)
 
 ## Links
 
- * Report a bug: https://github.com/YunoHost-Apps/bibliogram_ynh/issues
- * Upstream app repository: https://git.sr.ht/~cadence/bibliogram
+ * Report a bug: https://github.com/YunoHost-Apps/mumble-web_ynh/issues
+ * Upstream app repository: https://github.com/Johni0702/mumble-web
  * YunoHost website: https://yunohost.org/
 
 ---
 
 ## Developer info
 
-Please send your pull request to the [testing branch](https://github.com/YunoHost-Apps/bibliogram_ynh/tree/testing).
+Please send your pull request to the [testing branch](https://github.com/YunoHost-Apps/mumble-web_ynh/tree/testing).
 
 To try the testing branch, please proceed like that.
 ```
-sudo yunohost app install https://github.com/YunoHost-Apps/bibliogram_ynh/tree/testing --debug
+sudo yunohost app install https://github.com/YunoHost-Apps/mumble-web_ynh/tree/testing --debug
 or
-sudo yunohost app upgrade bibliogram -u https://github.com/YunoHost-Apps/bibliogram_ynh/tree/testing --debug
+sudo yunohost app upgrade mumble-web -u https://github.com/YunoHost-Apps/bibliogram_ynh/tree/testing --debug
 ```
