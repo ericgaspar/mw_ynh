@@ -4,7 +4,7 @@
 # COMMON VARIABLES
 #=================================================
 
-"websockify"
+pkg_dependencies="mailutils websockify"
 
 nodejs_version=12
 
